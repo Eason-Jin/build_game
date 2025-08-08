@@ -6,7 +6,7 @@ public abstract class ObjectBuilder : MonoBehaviour
     public GameObject objectPrefab;
     public LayerMask objectLayer;
     protected GameObject currentObject;
-    private int objectCount = 0;
+    private static int objectCount = 0;
     private bool placingObject = false;
     private bool rayHit = true;
 
@@ -32,6 +32,23 @@ public abstract class ObjectBuilder : MonoBehaviour
             ClearBuilder();
         }
 
+        // Rotate the current object
+        if (placingObject && currentObject != null)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                RotateObject(Vector3.right); // Rotate around x-axis
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                RotateObject(Vector3.up); // Rotate around y-axis
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RotateObject(Vector3.forward); // Rotate around z-axis
+            }
+        }
+
         if (placingObject)
         {
             FollowMouse();
@@ -47,6 +64,12 @@ public abstract class ObjectBuilder : MonoBehaviour
         {
             EnablePhysics();
         }
+    }
+
+    private void RotateObject(Vector3 axis)
+    {
+        float rotationAngle = 90f; // Fixed rotation angle
+        currentObject.transform.Rotate(axis * rotationAngle, Space.World);
     }
 
     private void SwitchBuilder<T>() where T : ObjectBuilder
