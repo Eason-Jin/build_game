@@ -1,38 +1,40 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
 {
-    public GameObject objectPrefab;      // Assign your prefab here
-    public LayerMask objectLayer;        // Layer for placed objects
-    protected GameObject currentObject;  // Object being placed now
-    protected int objectCount = 0;       // Count of objects placed
-    protected bool placingObject = false;
-    protected bool rayHit = true;        // True to place the first object
+    public GameObject objectPrefab;
+    public LayerMask objectLayer;
+    protected GameObject currentObject;
+    private int objectCount = 0;
+    private bool placingObject = false;
+    private bool rayHit = true;
+
+    private static ObjectBuilder activeBuilder; // Tracks the currently active builder
 
     void Update()
     {
+        // Switch to CubeBuilder when "X" is pressed
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            SwitchBuilder<CubeBuilder>();
+        }
+
+        // Switch to CylinderBuilder when "C" is pressed
         if (Input.GetKeyDown(KeyCode.C))
         {
-            StartPlacingObject();
+            SwitchBuilder<CylinderBuilder>();
+        }
+
+        // Cancel placing object when "Escape" is pressed
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ClearBuilder();
         }
 
         if (placingObject)
         {
             FollowMouse();
-
-            // Rotate the object along the x, y, and z axes
-            if (Input.GetKey(KeyCode.Q))
-            {
-                RotateObject(Vector3.right); // Rotate along the x-axis
-            }
-            if (Input.GetKey(KeyCode.E))
-            {
-                RotateObject(Vector3.up); // Rotate along the y-axis
-            }
-            if (Input.GetKey(KeyCode.R))
-            {
-                RotateObject(Vector3.forward); // Rotate along the z-axis
-            }
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -40,13 +42,77 @@ public abstract class ObjectBuilder : MonoBehaviour
             }
         }
 
+        // Enable physics when "V" is pressed
         if (Input.GetKeyDown(KeyCode.V))
         {
             EnablePhysics();
         }
     }
 
-    public virtual void StartPlacingObject()
+    private void SwitchBuilder<T>() where T : ObjectBuilder
+    {
+        if (activeBuilder != null)
+        {
+            activeBuilder.CancelPlacingObject(); // Stop the current builder
+        }
+
+        activeBuilder = FindObjectOfType<T>();
+        if (activeBuilder != null)
+        {
+            activeBuilder.StartplacingObject();
+        }
+    }
+
+    private void ClearBuilder()
+    {
+        if (activeBuilder != null)
+        {
+            activeBuilder.CancelPlacingObject(); // Stop the current builder
+        }
+        activeBuilder = null;
+    }
+
+    void EnablePhysics()
+    {
+        GameObject[] placedObjects = GameObject.FindGameObjectsWithTag("PlacedCube");
+        foreach (GameObject obj in placedObjects)
+        {
+            AddPhysics(obj);
+        }
+
+        placedObjects = GameObject.FindGameObjectsWithTag("PlacedCylinder");
+        foreach (GameObject obj in placedObjects)
+        {
+            AddPhysics(obj);
+        }
+    }
+
+    private void AddPhysics(GameObject obj)
+    {
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = obj.AddComponent<Rigidbody>();
+            rb.mass = 1f;
+        }
+
+        if (obj.transform.parent != null)
+        {
+            FixedJoint joint = obj.GetComponent<FixedJoint>();
+            if (joint == null)
+            {
+                joint = obj.AddComponent<FixedJoint>();
+            }
+            joint.connectedBody = obj.transform.parent.GetComponent<Rigidbody>();
+        }
+
+        if (obj.GetComponent<ObjectShatter>() == null)
+        {
+            obj.AddComponent<ObjectShatter>();
+        }
+    }
+
+    void StartplacingObject()
     {
         if (currentObject != null)
         {
@@ -56,7 +122,6 @@ public abstract class ObjectBuilder : MonoBehaviour
         currentObject = Instantiate(objectPrefab);
         placingObject = true;
 
-        // Disable the collider to prevent raycast hits
         Collider objectCollider = currentObject.GetComponent<Collider>();
         if (objectCollider != null)
         {
@@ -64,14 +129,23 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
-    protected virtual void FollowMouse()
+    void CancelPlacingObject()
+    {
+        if (currentObject != null)
+        {
+            Destroy(currentObject);
+            currentObject = null;
+        }
+        placingObject = false;
+    }
+
+    void FollowMouse()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         RaycastHit hit;
         if (objectCount == 0)
         {
-            // No objects placed yet - place freely on some ground plane, say y=0
             Plane ground = new Plane(Vector3.up, Vector3.zero);
             if (ground.Raycast(ray, out float enter))
             {
@@ -85,10 +159,8 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
         else
         {
-            // Raycast against placed objects
             if (Physics.Raycast(ray, out hit, 100f, objectLayer))
             {
-                // Snap to the surface normal of the hit object
                 Vector3 hitPoint = hit.point;
                 Vector3 hitNormal = hit.normal;
 
@@ -110,7 +182,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
-    protected virtual void PlaceObject()
+    void PlaceObject()
     {
         if (currentObject == null || rayHit == false)
         {
@@ -129,52 +201,20 @@ public abstract class ObjectBuilder : MonoBehaviour
             objectCollider.enabled = true;
         }
 
-        // Add the ObjectShatter script to the placed object
-        if (currentObject.GetComponent<ObjectShatter>() == null)
+        currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
+
+        // Assign tag based on the active builder
+        if (this is CubeBuilder)
         {
-            currentObject.AddComponent<ObjectShatter>();
+            currentObject.tag = "PlacedCube";
+        }
+        else if (this is CylinderBuilder)
+        {
+            currentObject.tag = "PlacedCylinder";
         }
 
-        currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
-        currentObject.tag = "PlacedObject";
         currentObject = null;
         placingObject = false;
         objectCount++;
-    }
-
-    protected virtual void EnablePhysics()
-    {
-        GameObject[] placedObjects = GameObject.FindGameObjectsWithTag("PlacedObject");
-
-        foreach (GameObject obj in placedObjects)
-        {
-            Rigidbody rb = obj.GetComponent<Rigidbody>();
-            if (rb == null)
-            {
-                rb = obj.AddComponent<Rigidbody>();
-                rb.mass = 1f;
-            }
-
-            if (obj.transform.parent != null)
-            {
-                FixedJoint joint = obj.GetComponent<FixedJoint>();
-                if (joint == null)
-                {
-                    joint = obj.AddComponent<FixedJoint>();
-                }
-                joint.connectedBody = obj.transform.parent.GetComponent<Rigidbody>();
-            }
-        }
-    }
-
-    protected virtual void RotateObject(Vector3 axis)
-    {
-        if (currentObject == null)
-        {
-            return;
-        }
-
-        float rotationSpeed = 100f * Time.deltaTime;
-        currentObject.transform.Rotate(axis, rotationSpeed);
     }
 }

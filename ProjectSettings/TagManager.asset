@@ -4,8 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - PlacedObject
-  - Cylinder
+  - PlacedCube
+  - PlacedCylinder
   layers:
   - Default
   - TransparentFX
