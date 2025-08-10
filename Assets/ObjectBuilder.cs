@@ -1,10 +1,9 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
 {
     public abstract string Tag { get; }
-    public abstract List<Vector3> attachmentDirections { get; }
+    public abstract int[] attachmentVectors { get; }    // UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD
     public GameObject objectPrefab;
     public LayerMask objectLayer;
 
@@ -123,9 +122,9 @@ public abstract class ObjectBuilder : MonoBehaviour
 
         currentObject = Instantiate(objectPrefab);
         currentObject.name = objectPrefab.name + "_" + objectCount;
-        currentObject.AddComponent<AttachmentDirections>();
-        currentObject.GetComponent<AttachmentDirections>().Initialise(currentObject, attachmentDirections);
-        currentObject.GetComponent<AttachmentDirections>().DrawDirections(true);
+        currentObject.AddComponent<AttachmentVectors>();
+        currentObject.GetComponent<AttachmentVectors>().Initialise(currentObject, attachmentVectors);
+        currentObject.GetComponent<AttachmentVectors>().DrawVectors(true);
         placingObject = true;
 
         Collider objectCollider = currentObject.GetComponent<Collider>();
@@ -158,6 +157,8 @@ public abstract class ObjectBuilder : MonoBehaviour
 
     private void AddPhysics(GameObject obj)
     {
+        GameObject parent = obj.transform.parent != null ? obj.transform.parent.gameObject : null;
+
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb == null)
         {

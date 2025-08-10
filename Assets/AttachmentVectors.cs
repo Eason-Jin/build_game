@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AttachmentDirections : MonoBehaviour
+public class AttachmentVectors : MonoBehaviour
 {
     private List<Vector3> directions = new List<Vector3>();
     private Dictionary<Vector3, LineRenderer> directionLineRenderers = new Dictionary<Vector3, LineRenderer>();
@@ -15,14 +15,26 @@ public class AttachmentDirections : MonoBehaviour
         { Vector3.back, Color.magenta }
     };
 
-    public void Initialise(GameObject currentGameObject, List<Vector3> directions)
+    public void Initialise(GameObject currentGameObject, int[] attachmentVectors)
     {
-        this.directions = directions;
+        // Clear existing directions
+        directions.Clear();
+
+        // Map attachmentVectors to directions
+        if (attachmentVectors.Length == 6)
+        {
+            if (attachmentVectors[0] > 0) directions.Add(Vector3.up * attachmentVectors[0]);
+            if (attachmentVectors[1] > 0) directions.Add(Vector3.down * attachmentVectors[1]);
+            if (attachmentVectors[2] > 0) directions.Add(Vector3.left * attachmentVectors[2]);
+            if (attachmentVectors[3] > 0) directions.Add(Vector3.right * attachmentVectors[3]);
+            if (attachmentVectors[4] > 0) directions.Add(Vector3.forward * attachmentVectors[4]);
+            if (attachmentVectors[5] > 0) directions.Add(Vector3.back * attachmentVectors[5]);
+        }
 
         // Create LineRenderers for each direction
         foreach (var direction in directions)
         {
-            if (directionColorMap.TryGetValue(direction, out Color color))
+            if (directionColorMap.TryGetValue(direction.normalized, out Color color))
             {
                 GameObject lineObject = new GameObject("LineRenderer_" + direction);
                 lineObject.transform.SetParent(currentGameObject.transform); // Attach to parent
@@ -47,13 +59,13 @@ public class AttachmentDirections : MonoBehaviour
             if (directionLineRenderers.TryGetValue(direction, out LineRenderer lineRenderer))
             {
                 Vector3 startPoint = transform.position; // Parent object's position
-                Vector3 endPoint = startPoint + transform.TransformDirection(direction) * 2.0f; // Adjust length as needed
+                Vector3 endPoint = startPoint + transform.TransformDirection(direction);
                 lineRenderer.SetPositions(new Vector3[] { startPoint, endPoint });
             }
         }
     }
 
-    public void DrawDirections(bool on)
+    public void DrawVectors(bool on)
     {
         if (!on)
         {
@@ -62,10 +74,10 @@ public class AttachmentDirections : MonoBehaviour
             {
                 if (lineRenderer != null)
                 {
-                    Destroy(lineRenderer.gameObject);
+                    lineRenderer.startWidth = 0.0f;
+                    lineRenderer.endWidth = 0.0f;
                 }
             }
-            directionLineRenderers.Clear();
         }
     }
 }
