@@ -183,11 +183,11 @@ public abstract class ObjectBuilder : MonoBehaviour
                     {
                         if (Vector3.Distance(objPoint, parentPoint) < 0.01f) // Allow for floating-point imprecision
                         {
-                            Debug.Log($"Attaching {obj.name} to {parent.name} at point {objPoint}");
                             FixedJoint joint = obj.GetComponent<FixedJoint>();
                             if (joint == null)
                             {
                                 joint = obj.AddComponent<FixedJoint>();
+                                obj.AddComponent<ObjectShatter>();
                             }
                             joint.connectedBody = parent.GetComponent<Rigidbody>();
                             return;
@@ -195,15 +195,6 @@ public abstract class ObjectBuilder : MonoBehaviour
                     }
                 }
             }
-        }
-        else
-        {
-            Debug.Log($"{obj.name} has no parent");
-        }
-
-        if (obj.GetComponent<ObjectShatter>() == null)
-        {
-            obj.AddComponent<ObjectShatter>();
         }
     }
 
