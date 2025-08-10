@@ -1,20 +1,23 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
 {
     public abstract string Tag { get; }
-
+    public abstract List<Vector3> attachmentDirections { get; }
     public GameObject objectPrefab;
     public LayerMask objectLayer;
+
     protected GameObject currentObject;
-    private static int objectCount = 0;
-    private bool placingObject = false;
-    private bool rayHit = true;
+    protected static int objectCount = 0;
+    protected bool placingObject = false;
 
     private static ObjectBuilder activeBuilder; // Tracks the currently active builder
+    private bool rayHit = true;
+
 
     /* 
-     * ____        _     _ _        _____                 _   _                 
+     *  ____        _     _ _        _____                 _   _                 
      * |  _ \ _   _| |__ | (_) ___  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
      * | |_) | | | | '_ \| | |/ __| | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
      * |  __/| |_| | |_) | | | (__  |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
@@ -76,7 +79,7 @@ public abstract class ObjectBuilder : MonoBehaviour
     }
 
     /*
-     * ____            _            _           _   _____                 _   _                 
+     *  ____            _            _           _   _____                 _   _                 
      * |  _ \ _ __ ___ | |_ ___  ___| |_ ___  __| | |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
      * | |_) | '__/ _ \| __/ _ \/ __| __/ _ \/ _` | | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
      * |  __/| | | (_) | ||  __/ (__| ||  __/ (_| | |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
@@ -84,7 +87,7 @@ public abstract class ObjectBuilder : MonoBehaviour
      */
 
     /*
-     * ____       _            _         _____                 _   _                 
+     *  ____       _            _         _____                 _   _                 
      * |  _ \ _ __(_)_   ____ _| |_ ___  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
      * | |_) | '__| \ \ / / _` | __/ _ \ | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
      * |  __/| |  | |\ V / (_| | ||  __/ |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
@@ -111,6 +114,27 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
+    private void StartplacingObject()
+    {
+        if (currentObject != null)
+        {
+            return;
+        }
+
+        currentObject = Instantiate(objectPrefab);
+        currentObject.name = objectPrefab.name + "_" + objectCount;
+        currentObject.AddComponent<AttachmentDirections>();
+        currentObject.GetComponent<AttachmentDirections>().Initialise(currentObject, attachmentDirections);
+        currentObject.GetComponent<AttachmentDirections>().DrawDirections(true);
+        placingObject = true;
+
+        Collider objectCollider = currentObject.GetComponent<Collider>();
+        if (objectCollider != null)
+        {
+            objectCollider.enabled = false;
+        }
+    }
+
     private void ClearBuilder()
     {
         if (activeBuilder != null)
@@ -125,7 +149,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         GameObject[] allObjects = FindObjectsOfType<GameObject>();
         foreach (GameObject obj in allObjects)
         {
-            if (obj.tag.StartsWith("Placed"))
+            if (obj.tag.StartsWith("Placed") && !obj.name.EndsWith("Builder"))
             {
                 AddPhysics(obj);
             }
@@ -154,23 +178,6 @@ public abstract class ObjectBuilder : MonoBehaviour
         if (obj.GetComponent<ObjectShatter>() == null)
         {
             obj.AddComponent<ObjectShatter>();
-        }
-    }
-
-    private void StartplacingObject()
-    {
-        if (currentObject != null)
-        {
-            return;
-        }
-
-        currentObject = Instantiate(objectPrefab);
-        placingObject = true;
-
-        Collider objectCollider = currentObject.GetComponent<Collider>();
-        if (objectCollider != null)
-        {
-            objectCollider.enabled = false;
         }
     }
 
@@ -247,7 +254,7 @@ public abstract class ObjectBuilder : MonoBehaviour
 
         currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
 
-        currentObject.tag = Tag;
+        currentObject.tag = tag;
 
         currentObject = null;
         placingObject = false;
