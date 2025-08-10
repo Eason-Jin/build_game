@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
@@ -13,6 +12,14 @@ public abstract class ObjectBuilder : MonoBehaviour
     private bool rayHit = true;
 
     private static ObjectBuilder activeBuilder; // Tracks the currently active builder
+
+    /* 
+     * ____        _     _ _        _____                 _   _                 
+     * |  _ \ _   _| |__ | (_) ___  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+     * | |_) | | | | '_ \| | |/ __| | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+     * |  __/| |_| | |_) | | | (__  |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
+     * |_|    \__,_|_.__/|_|_|\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+     */
 
     void Update()
     {
@@ -68,6 +75,22 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
+    /*
+     * ____            _            _           _   _____                 _   _                 
+     * |  _ \ _ __ ___ | |_ ___  ___| |_ ___  __| | |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+     * | |_) | '__/ _ \| __/ _ \/ __| __/ _ \/ _` | | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+     * |  __/| | | (_) | ||  __/ (__| ||  __/ (_| | |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
+     * |_|   |_|  \___/ \__\___|\___|\__\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+     */
+
+    /*
+     * ____       _            _         _____                 _   _                 
+     * |  _ \ _ __(_)_   ____ _| |_ ___  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+     * | |_) | '__| \ \ / / _` | __/ _ \ | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+     * |  __/| |  | |\ V / (_| | ||  __/ |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
+     * |_|   |_|  |_| \_/ \__,_|\__\___| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+     */
+
     private void RotateObject(Vector3 axis)
     {
         float rotationAngle = 90f; // Fixed rotation angle
@@ -97,7 +120,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         activeBuilder = null;
     }
 
-    void EnablePhysics()
+    private void EnablePhysics()
     {
         GameObject[] allObjects = FindObjectsOfType<GameObject>();
         foreach (GameObject obj in allObjects)
@@ -134,7 +157,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
-    void StartplacingObject()
+    private void StartplacingObject()
     {
         if (currentObject != null)
         {
@@ -151,7 +174,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         }
     }
 
-    void CancelPlacingObject()
+    private void CancelPlacingObject()
     {
         if (currentObject != null)
         {
@@ -161,7 +184,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         placingObject = false;
     }
 
-    void FollowMouse()
+    private void FollowMouse()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
@@ -203,8 +226,7 @@ public abstract class ObjectBuilder : MonoBehaviour
             }
         }
     }
-
-    void PlaceObject()
+    private void PlaceObject()
     {
         if (currentObject == null || rayHit == false)
         {
