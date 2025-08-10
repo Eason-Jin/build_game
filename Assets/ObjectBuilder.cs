@@ -86,6 +86,22 @@ public abstract class ObjectBuilder : MonoBehaviour
      * |_|   |_|  \___/ \__\___|\___|\__\___|\__,_| |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
      */
 
+    protected virtual void AddCollider()
+    {
+        MeshCollider meshCollider = currentObject.AddComponent<MeshCollider>();
+        MeshFilter meshFilter = currentObject.GetComponent<MeshFilter>();
+
+        if (meshFilter != null && meshFilter.sharedMesh != null)
+        {
+            meshCollider.sharedMesh = meshFilter.sharedMesh;
+            meshCollider.convex = true;
+        }
+        else
+        {
+            Debug.LogWarning("MeshFilter or sharedMesh is missing. MeshCollider cannot be added.");
+        }
+    }
+
     /*
      *  ____       _            _         _____                 _   _                 
      * |  _ \ _ __(_)_   ____ _| |_ ___  |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
@@ -262,17 +278,12 @@ public abstract class ObjectBuilder : MonoBehaviour
         {
             currentObject.transform.SetParent(hit.collider.transform);
         }
-
-        Collider objectCollider = currentObject.GetComponent<Collider>();
-        if (objectCollider != null)
-        {
-            objectCollider.enabled = true;
-        }
-
         currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
 
+        AddCollider();
         currentObject.tag = tag;
         currentObject.GetComponent<AttachmentVectors>().UpdatePosition(currentObject.transform.position);
+        currentObject.GetComponent<AttachmentVectors>().DrawVectors(false);
 
         currentObject = null;
         placingObject = false;
