@@ -2,12 +2,12 @@ public class CubeBuilder : ObjectBuilder
 {
     public override string Tag => "PlacedCube";
 
-    public override int[] attachmentVectors => new int[] {
-        1,  // UP
-        1,  // DOWN
-        1,  // LEFT
-        1,  // RIGHT
-        1,  // FORWARD
-        1   // BACKWARD
+    public override float[] attachmentVectors => new float[] {
+        0.5f,  // UP
+        0.5f,  // DOWN
+        0.5f,  // LEFT
+        0.5f,  // RIGHT
+        0.5f,  // FORWARD
+        0.5f   // BACKWARD
     };
 }

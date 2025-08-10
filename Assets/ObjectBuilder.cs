@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
 {
     public abstract string Tag { get; }
-    public abstract int[] attachmentVectors { get; }    // UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD
+    public abstract float[] attachmentVectors { get; }    // UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD
     public GameObject objectPrefab;
     public LayerMask objectLayer;
 
@@ -11,7 +12,7 @@ public abstract class ObjectBuilder : MonoBehaviour
     protected static int objectCount = 0;
     protected bool placingObject = false;
 
-    private static ObjectBuilder activeBuilder; // Tracks the currently active builder
+    private static ObjectBuilder activeBuilder;
     private bool rayHit = true;
 
 
@@ -95,7 +96,7 @@ public abstract class ObjectBuilder : MonoBehaviour
 
     private void RotateObject(Vector3 axis)
     {
-        float rotationAngle = 90f; // Fixed rotation angle
+        float rotationAngle = 90f;
         currentObject.transform.Rotate(axis * rotationAngle, Space.World);
     }
 
@@ -103,7 +104,7 @@ public abstract class ObjectBuilder : MonoBehaviour
     {
         if (activeBuilder != null)
         {
-            activeBuilder.CancelPlacingObject(); // Stop the current builder
+            activeBuilder.CancelPlacingObject();
         }
 
         activeBuilder = FindObjectOfType<T>();
@@ -138,7 +139,7 @@ public abstract class ObjectBuilder : MonoBehaviour
     {
         if (activeBuilder != null)
         {
-            activeBuilder.CancelPlacingObject(); // Stop the current builder
+            activeBuilder.CancelPlacingObject();
         }
         activeBuilder = null;
     }
@@ -157,7 +158,6 @@ public abstract class ObjectBuilder : MonoBehaviour
 
     private void AddPhysics(GameObject obj)
     {
-        GameObject parent = obj.transform.parent != null ? obj.transform.parent.gameObject : null;
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb == null)
@@ -166,14 +166,39 @@ public abstract class ObjectBuilder : MonoBehaviour
             rb.mass = 1f;
         }
 
-        if (obj.transform.parent != null)
+        GameObject parent = obj.transform.parent != null ? obj.transform.parent.gameObject : null;
+        if (parent != null)
         {
-            FixedJoint joint = obj.GetComponent<FixedJoint>();
-            if (joint == null)
+            AttachmentVectors objAttachment = obj.GetComponent<AttachmentVectors>();
+            AttachmentVectors parentAttachment = parent.GetComponent<AttachmentVectors>();
+
+            if (objAttachment != null && parentAttachment != null)
             {
-                joint = obj.AddComponent<FixedJoint>();
+                List<Vector3> objEndPoints = objAttachment.GetEndingPoints();
+                List<Vector3> parentEndPoints = parentAttachment.GetEndingPoints();
+
+                foreach (Vector3 objPoint in objEndPoints)
+                {
+                    foreach (Vector3 parentPoint in parentEndPoints)
+                    {
+                        if (Vector3.Distance(objPoint, parentPoint) < 0.01f) // Allow for floating-point imprecision
+                        {
+                            Debug.Log($"Attaching {obj.name} to {parent.name} at point {objPoint}");
+                            FixedJoint joint = obj.GetComponent<FixedJoint>();
+                            if (joint == null)
+                            {
+                                joint = obj.AddComponent<FixedJoint>();
+                            }
+                            joint.connectedBody = parent.GetComponent<Rigidbody>();
+                            return;
+                        }
+                    }
+                }
             }
-            joint.connectedBody = obj.transform.parent.GetComponent<Rigidbody>();
+        }
+        else
+        {
+            Debug.Log($"{obj.name} has no parent");
         }
 
         if (obj.GetComponent<ObjectShatter>() == null)
@@ -256,6 +281,7 @@ public abstract class ObjectBuilder : MonoBehaviour
         currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
 
         currentObject.tag = tag;
+        currentObject.GetComponent<AttachmentVectors>().UpdatePosition(currentObject.transform.position);
 
         currentObject = null;
         placingObject = false;

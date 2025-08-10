@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class AttachmentVectors : MonoBehaviour
 {
+    private Vector3 objectPosition;
     private List<Vector3> directions = new List<Vector3>();
     private Dictionary<Vector3, LineRenderer> directionLineRenderers = new Dictionary<Vector3, LineRenderer>();
     private Dictionary<Vector3, Color> directionColorMap = new Dictionary<Vector3, Color>
@@ -15,12 +16,8 @@ public class AttachmentVectors : MonoBehaviour
         { Vector3.back, Color.magenta }
     };
 
-    public void Initialise(GameObject currentGameObject, int[] attachmentVectors)
+    public void Initialise(GameObject currentGameObject, float[] attachmentVectors)
     {
-        // Clear existing directions
-        directions.Clear();
-
-        // Map attachmentVectors to directions
         if (attachmentVectors.Length == 6)
         {
             if (attachmentVectors[0] > 0) directions.Add(Vector3.up * attachmentVectors[0]);
@@ -31,13 +28,12 @@ public class AttachmentVectors : MonoBehaviour
             if (attachmentVectors[5] > 0) directions.Add(Vector3.back * attachmentVectors[5]);
         }
 
-        // Create LineRenderers for each direction
         foreach (var direction in directions)
         {
             if (directionColorMap.TryGetValue(direction.normalized, out Color color))
             {
                 GameObject lineObject = new GameObject("LineRenderer_" + direction);
-                lineObject.transform.SetParent(currentGameObject.transform); // Attach to parent
+                lineObject.transform.SetParent(currentGameObject.transform);
                 LineRenderer lineRenderer = lineObject.AddComponent<LineRenderer>();
                 lineRenderer.startWidth = 0.05f;
                 lineRenderer.endWidth = 0.05f;
@@ -53,23 +49,28 @@ public class AttachmentVectors : MonoBehaviour
 
     private void Update()
     {
-        // Update the positions of the LineRenderers
+        float visualEffectScale = 1.2f;
+
         foreach (var direction in directions)
         {
             if (directionLineRenderers.TryGetValue(direction, out LineRenderer lineRenderer))
             {
                 Vector3 startPoint = transform.position; // Parent object's position
-                Vector3 endPoint = startPoint + transform.TransformDirection(direction);
+                Vector3 endPoint = startPoint + transform.TransformDirection(direction) * visualEffectScale;
                 lineRenderer.SetPositions(new Vector3[] { startPoint, endPoint });
             }
         }
+    }
+
+    public void UpdatePosition(Vector3 newPosition)
+    {
+        objectPosition = newPosition;
     }
 
     public void DrawVectors(bool on)
     {
         if (!on)
         {
-            // Destroy all LineRenderers
             foreach (var lineRenderer in directionLineRenderers.Values)
             {
                 if (lineRenderer != null)
@@ -79,5 +80,16 @@ public class AttachmentVectors : MonoBehaviour
                 }
             }
         }
+    }
+
+    public List<Vector3> GetEndingPoints()
+    {
+        List<Vector3> endPoints = new List<Vector3>();
+        foreach (var direction in directions)
+        {
+            Vector3 endPoint = objectPosition + transform.TransformDirection(direction);
+            endPoints.Add(endPoint);
+        }
+        return endPoints;
     }
 }
