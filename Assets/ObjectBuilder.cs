@@ -3,6 +3,8 @@ using UnityEngine;
 
 public abstract class ObjectBuilder : MonoBehaviour
 {
+    public abstract string Tag { get; }
+
     public GameObject objectPrefab;
     public LayerMask objectLayer;
     protected GameObject currentObject;
@@ -97,16 +99,13 @@ public abstract class ObjectBuilder : MonoBehaviour
 
     void EnablePhysics()
     {
-        GameObject[] placedObjects = GameObject.FindGameObjectsWithTag("PlacedCube");
-        foreach (GameObject obj in placedObjects)
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
         {
-            AddPhysics(obj);
-        }
-
-        placedObjects = GameObject.FindGameObjectsWithTag("PlacedCylinder");
-        foreach (GameObject obj in placedObjects)
-        {
-            AddPhysics(obj);
+            if (obj.tag.StartsWith("Placed"))
+            {
+                AddPhysics(obj);
+            }
         }
     }
 
@@ -226,15 +225,7 @@ public abstract class ObjectBuilder : MonoBehaviour
 
         currentObject.layer = LayerMask.NameToLayer("PlacedObjects");
 
-        // Assign tag based on the active builder
-        if (this is CubeBuilder)
-        {
-            currentObject.tag = "PlacedCube";
-        }
-        else if (this is CylinderBuilder)
-        {
-            currentObject.tag = "PlacedCylinder";
-        }
+        currentObject.tag = Tag;
 
         currentObject = null;
         placingObject = false;
