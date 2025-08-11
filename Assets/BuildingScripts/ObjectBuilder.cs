@@ -86,8 +86,6 @@ namespace BuildingScripts
 
         public void CancelPlacingObject()
         {
-            Debug.Log("Cancel placing object");
-            Debug.Log("Current object: " + currentObject);
             if (currentObject != null)
             {
                 Destroy(currentObject);
@@ -182,6 +180,7 @@ namespace BuildingScripts
                         {
                             if (Vector3.Distance(objPoint, parentPoint) < 0.01f) // Allow for floating-point imprecision
                             {
+                                Debug.Log($"Adding FixedJoint between {obj.name} and {parent.name} at point {objPoint}");
                                 FixedJoint joint = obj.GetComponent<FixedJoint>();
                                 if (joint == null)
                                 {

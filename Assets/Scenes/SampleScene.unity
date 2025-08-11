@@ -276,6 +276,7 @@ MonoBehaviour:
   objectLayer:
     serializedVersion: 2
     m_Bits: 8
+  placingObject: 0
 --- !u!4 &126821742
 Transform:
   m_ObjectHideFlags: 0
@@ -899,6 +900,7 @@ MonoBehaviour:
   objectLayer:
     serializedVersion: 2
     m_Bits: 8
+  placingObject: 0
 --- !u!1 &1283340239
 GameObject:
   m_ObjectHideFlags: 0
@@ -1113,6 +1115,7 @@ MonoBehaviour:
   objectLayer:
     serializedVersion: 2
     m_Bits: 8
+  placingObject: 0
 --- !u!1 &2071888654
 GameObject:
   m_ObjectHideFlags: 0
@@ -1243,7 +1246,7 @@ GameObject:
   - component: {fileID: 2135411564}
   m_Layer: 0
   m_Name: SphereBuilder
-  m_TagString: Untagged
+  m_TagString: PlacedSphere
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1279,6 +1282,7 @@ MonoBehaviour:
   objectLayer:
     serializedVersion: 2
     m_Bits: 8
+  placingObject: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
