@@ -4,7 +4,7 @@ namespace BuildingScripts
 
     public class ObjectShatter : MonoBehaviour
     {
-        public float shatterThreshold = 1.0f; // Impact speed threshold for shattering
+        public float shatterThreshold = 5.0f;
 
         void OnCollisionEnter(Collision collision)
         {

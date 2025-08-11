@@ -14,7 +14,7 @@ namespace BuildingScripts
         protected static int objectCount = 0;
         protected bool placingObject = false;
 
-        private static ObjectBuilder activeBuilder;
+        public static ObjectBuilder activeBuilder;
         private bool rayHit = true;
 
 
@@ -28,18 +28,6 @@ namespace BuildingScripts
 
         void Update()
         {
-            // Switch to CubeBuilder when "X" is pressed
-            if (Input.GetKeyDown(KeyCode.X))
-            {
-                SwitchBuilder<CubeBuilder>();
-            }
-
-            // Switch to CylinderBuilder when "C" is pressed
-            if (Input.GetKeyDown(KeyCode.C))
-            {
-                SwitchBuilder<CylinderBuilder>();
-            }
-
             // Cancel placing object when "Escape" is pressed
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -72,11 +60,48 @@ namespace BuildingScripts
                     PlaceObject();
                 }
             }
+        }
 
-            // Enable physics when "V" is pressed
-            if (Input.GetKeyDown(KeyCode.V))
+        public void StartplacingObject()
+        {
+            if (currentObject != null)
             {
-                EnablePhysics();
+                return;
+            }
+
+            currentObject = Instantiate(objectPrefab);
+            currentObject.name = objectPrefab.name + "_" + objectCount;
+            currentObject.AddComponent<AttachmentVectors>();
+            currentObject.GetComponent<AttachmentVectors>().Initialise(currentObject, attachmentVectors);
+            currentObject.GetComponent<AttachmentVectors>().DrawVectors(true);
+            placingObject = true;
+
+            Collider objectCollider = currentObject.GetComponent<Collider>();
+            if (objectCollider != null)
+            {
+                objectCollider.enabled = false;
+            }
+        }
+
+        public void CancelPlacingObject()
+        {
+            if (currentObject != null)
+            {
+                Destroy(currentObject);
+                currentObject = null;
+            }
+            placingObject = false;
+        }
+
+        public void EnablePhysics()
+        {
+            GameObject[] allObjects = FindObjectsOfType<GameObject>();
+            foreach (GameObject obj in allObjects)
+            {
+                if (obj.tag.StartsWith("Placed") && !obj.name.EndsWith("Builder"))
+                {
+                    AddPhysics(obj);
+                }
             }
         }
 
@@ -118,41 +143,6 @@ namespace BuildingScripts
             currentObject.transform.Rotate(axis * rotationAngle, Space.World);
         }
 
-        private void SwitchBuilder<T>() where T : ObjectBuilder
-        {
-            if (activeBuilder != null)
-            {
-                activeBuilder.CancelPlacingObject();
-            }
-
-            activeBuilder = FindObjectOfType<T>();
-            if (activeBuilder != null)
-            {
-                activeBuilder.StartplacingObject();
-            }
-        }
-
-        private void StartplacingObject()
-        {
-            if (currentObject != null)
-            {
-                return;
-            }
-
-            currentObject = Instantiate(objectPrefab);
-            currentObject.name = objectPrefab.name + "_" + objectCount;
-            currentObject.AddComponent<AttachmentVectors>();
-            currentObject.GetComponent<AttachmentVectors>().Initialise(currentObject, attachmentVectors);
-            currentObject.GetComponent<AttachmentVectors>().DrawVectors(true);
-            placingObject = true;
-
-            Collider objectCollider = currentObject.GetComponent<Collider>();
-            if (objectCollider != null)
-            {
-                objectCollider.enabled = false;
-            }
-        }
-
         private void ClearBuilder()
         {
             if (activeBuilder != null)
@@ -160,18 +150,6 @@ namespace BuildingScripts
                 activeBuilder.CancelPlacingObject();
             }
             activeBuilder = null;
-        }
-
-        private void EnablePhysics()
-        {
-            GameObject[] allObjects = FindObjectsOfType<GameObject>();
-            foreach (GameObject obj in allObjects)
-            {
-                if (obj.tag.StartsWith("Placed") && !obj.name.EndsWith("Builder"))
-                {
-                    AddPhysics(obj);
-                }
-            }
         }
 
         private void AddPhysics(GameObject obj)
@@ -214,16 +192,6 @@ namespace BuildingScripts
                     }
                 }
             }
-        }
-
-        private void CancelPlacingObject()
-        {
-            if (currentObject != null)
-            {
-                Destroy(currentObject);
-                currentObject = null;
-            }
-            placingObject = false;
         }
 
         private void FollowMouse()

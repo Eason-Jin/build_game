@@ -13,6 +13,7 @@ namespace UIScripts
 
         private Dictionary<string, ObjectBuilder> builders = new Dictionary<string, ObjectBuilder>();
         private bool isPlaying = false;
+        private TextMeshProUGUI playButtonText;
 
         void Start()
         {
@@ -57,34 +58,44 @@ namespace UIScripts
                 buttonRect.localScale = Vector3.one;
             }
 
-            playButton.onClick.AddListener(EnablePhysics);
+            playButton.onClick.AddListener(ChangePlayState);
 
-            TextMeshProUGUI playButtonText = playButton.GetComponentInChildren<TextMeshProUGUI>();
-            if (playButtonText != null)
-            {
-                if (isPlaying)
-                {
-                    playButtonText.text = "Cancel";
-                }
-                else
-                {
-                    playButtonText.text = "Play";
-                }
-            }
+            playButtonText = playButton.GetComponentInChildren<TextMeshProUGUI>();
+            playButtonText.text = "Play";
         }
 
         private void SwitchBuilder(ObjectBuilder builder)
         {
-            builder.SendMessage("SwitchBuilder", builder.GetType());
+            if (ObjectBuilder.activeBuilder != null)
+                ObjectBuilder.activeBuilder.CancelPlacingObject();
+
+            ObjectBuilder.activeBuilder = builder;
+            builder.StartplacingObject();
         }
 
-        private void EnablePhysics()
+        private void ChangePlayState()
         {
-            ObjectBuilder activeBuilder = FindObjectOfType<ObjectBuilder>();
-            if (activeBuilder != null)
+            isPlaying = !isPlaying;
+            if (isPlaying)
             {
-                activeBuilder.SendMessage("EnablePhysics");
-                isPlaying = !isPlaying;
+                playButtonText.text = "Play";
+                StartPlaying();
+            }
+            else
+            {
+                playButtonText.text = "Cancel";
+                //ReturnToBuilder();
+            }
+
+        }
+
+
+        private void StartPlaying()
+        {
+            ObjectBuilder[] builders = FindObjectsOfType<ObjectBuilder>();
+            foreach (ObjectBuilder builder in builders)
+            {
+                builder.EnablePhysics();
             }
         }
     }
