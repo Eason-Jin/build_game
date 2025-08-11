@@ -9,10 +9,10 @@ namespace BuildingScripts
         public abstract float[] attachmentVectors { get; }    // UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD
         public GameObject objectPrefab;
         public LayerMask objectLayer;
+        public bool placingObject = false;
 
         protected GameObject currentObject;
         protected static int objectCount = 0;
-        protected bool placingObject = false;
 
         public static ObjectBuilder activeBuilder;
         private bool rayHit = true;
@@ -28,6 +28,7 @@ namespace BuildingScripts
 
         void Update()
         {
+
             // Cancel placing object when "Escape" is pressed
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -85,6 +86,8 @@ namespace BuildingScripts
 
         public void CancelPlacingObject()
         {
+            Debug.Log("Cancel placing object");
+            Debug.Log("Current object: " + currentObject);
             if (currentObject != null)
             {
                 Destroy(currentObject);
@@ -255,9 +258,9 @@ namespace BuildingScripts
             currentObject.GetComponent<AttachmentVectors>().UpdatePosition(currentObject.transform.position);
             currentObject.GetComponent<AttachmentVectors>().DrawVectors(false);
 
-            currentObject = null;
             placingObject = false;
             objectCount++;
+            currentObject = null;
         }
     }
 }

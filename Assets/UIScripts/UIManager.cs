@@ -17,6 +17,18 @@ namespace UIScripts
 
         void Start()
         {
+            VerticalLayoutGroup layoutGroup = objectListParent.GetComponent<VerticalLayoutGroup>();
+            if (layoutGroup == null)
+            {
+                layoutGroup = objectListParent.gameObject.AddComponent<VerticalLayoutGroup>();
+            }
+
+            layoutGroup.spacing = 5;
+            layoutGroup.childAlignment = TextAnchor.UpperCenter;
+            layoutGroup.padding = new RectOffset(10, 10, 10, 10);
+            layoutGroup.childForceExpandHeight = false;
+            layoutGroup.childForceExpandWidth = false;
+
             Image objectListBackground = objectListParent.GetComponent<Image>();
             if (objectListBackground == null)
             {
@@ -56,6 +68,7 @@ namespace UIScripts
 
                 RectTransform buttonRect = buttonObj.GetComponent<RectTransform>();
                 buttonRect.localScale = Vector3.one;
+                buttonRect.sizeDelta = new Vector2(buttonRect.sizeDelta.x, 30);
             }
 
             playButton.onClick.AddListener(ChangePlayState);
@@ -64,10 +77,18 @@ namespace UIScripts
             playButtonText.text = "Play";
         }
 
+        void Update()
+        {
+            bool isPlacingObjects = ObjectBuilder.activeBuilder != null && ObjectBuilder.activeBuilder.placingObject;
+            objectListParent.gameObject.SetActive(!isPlacingObjects);
+        }
+
         private void SwitchBuilder(ObjectBuilder builder)
         {
             if (ObjectBuilder.activeBuilder != null)
+            {
                 ObjectBuilder.activeBuilder.CancelPlacingObject();
+            }
 
             ObjectBuilder.activeBuilder = builder;
             builder.StartplacingObject();
@@ -84,11 +105,9 @@ namespace UIScripts
             }
             else
             {
-                //ReturnToBuilder();
                 playButtonText.text = "Play";
                 objectListParent.gameObject.SetActive(true);
             }
-
         }
 
 
