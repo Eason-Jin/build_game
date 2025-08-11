@@ -13,7 +13,7 @@ namespace BuildingScripts
         0.5f,  // RIGHT
         0.5f,  // FORWARD
         0.5f   // BACKWARD
-    };
+        };
 
         protected override void AddCollider()
         {

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PlacedCube
   - PlacedCylinder
+  - PlacedTriangle
   layers:
   - Default
   - TransparentFX
