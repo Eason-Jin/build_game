@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 public class FreeCamera : MonoBehaviour
 {
     public float moveSpeed = 10f;
@@ -7,21 +8,25 @@ public class FreeCamera : MonoBehaviour
 
     private float yaw = 0f;
     private float pitch = 0f;
+    private CharacterController controller;
 
     void Start()
     {
+        controller = GetComponent<CharacterController>();
+        controller.height = 1.0f;
+        controller.radius = 0.5f;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Set the initial spawn height to 3
         Vector3 startPosition = transform.position;
-        startPosition.y = 3f;
+        startPosition.y = 2.0f;
         transform.position = startPosition;
     }
 
     void Update()
     {
-        // Only rotate if right mouse button is held (like in Scene view)
+        // Only rotate if right mouse button is held
         if (Input.GetMouseButton(1))
         {
             yaw += Input.GetAxis("Mouse X") * lookSpeed;
@@ -30,7 +35,7 @@ public class FreeCamera : MonoBehaviour
             transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
         }
 
-        // Move even without holding right mouse
+        // Movement input
         float speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? 2f : 1f);
         Vector3 move = new Vector3(
             Input.GetAxis("Horizontal"),
@@ -41,12 +46,15 @@ public class FreeCamera : MonoBehaviour
         if (Input.GetKey(KeyCode.Space)) move.y += 1f;
         if (Input.GetKey(KeyCode.LeftControl)) move.y -= 1f;
 
-        // Apply movement
-        transform.Translate(move * speed * Time.deltaTime);
+        // Apply movement through CharacterController for collision
+        controller.Move(transform.TransformDirection(move) * speed * Time.deltaTime);
 
-        // Clamp the vertical position to not go below 0
-        Vector3 clampedPosition = transform.position;
-        clampedPosition.y = Mathf.Max(clampedPosition.y, 0f);
-        transform.position = clampedPosition;
+        // Keep from going underground
+        if (transform.position.y < -0.5f)
+        {
+            Vector3 pos = transform.position;
+            pos.y = -0.5f;
+            transform.position = pos;
+        }
     }
 }
