@@ -78,13 +78,15 @@ namespace UIScripts
             isPlaying = !isPlaying;
             if (isPlaying)
             {
-                playButtonText.text = "Play";
                 StartPlaying();
+                playButtonText.text = "Cancel";
+                objectListParent.gameObject.SetActive(false);
             }
             else
             {
-                playButtonText.text = "Cancel";
                 //ReturnToBuilder();
+                playButtonText.text = "Play";
+                objectListParent.gameObject.SetActive(true);
             }
 
         }
