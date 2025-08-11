@@ -819,7 +819,7 @@ GameObject:
   - component: {fileID: 1094720419}
   - component: {fileID: 1094720420}
   m_Layer: 0
-  m_Name: TriangleGenerator
+  m_Name: Triangle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
